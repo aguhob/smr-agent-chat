@@ -2,5 +2,9 @@ streamlit
 openai
 fpdf
 requests
-streamlit-audiorecorder
-streamlit_webrtc
+//streamlit-audiorecorder
+//streamlit_webrtc
+lyzr
+pyttsx3
+speechrecognition
+pyaudio
