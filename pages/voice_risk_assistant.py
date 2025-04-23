@@ -47,11 +47,11 @@ response = client.chat.completions.create(
     model="gpt-4",
     messages=[
         {"role": "system", "content": "You are a helpful and clear risk mitigation advisor for energy projects."},
-        {"role": "user", "content": f"User asked: '{transcript}'\n\nContext:\n{combined_context}"}
+        {"role": "user", "content": f"User asked: '{transcript}'\\n\\nContext:\\n{combined_context}"}
     ]
 )
 
-reply = response["choices"][0]["message"]["content"]
+reply = response.choices[0].message.content
 st.markdown(f"**AI Assistant says:** {reply}")
 
 st.markdown("---")
