@@ -38,7 +38,7 @@ try:
     res = requests.get(airtable_url, headers=headers, params=params)
     community_records = res.json().get("records", [])
     community_feedback = "
-".join([rec["fields"].get("Concern", "") for rec in community_records]) or "No recent community feedback."
+"  # fixed unterminated string.join([rec["fields"].get("Concern", "") for rec in community_records]) or "No recent community feedback."
 except Exception as e:
     community_feedback = "Could not load community feedback."
 
