@@ -1,10 +1,12 @@
 import streamlit as st
-import openai
+from openai import OpenAI
 import json
 
 st.set_page_config(page_title="🎙️ Voice Risk Assistant")
 st.title("🎙️ Developer Risk Voice Assistant")
 st.markdown("Speak or type your concern and get an AI-generated risk insight, enhanced with local data and community feedback.")
+
+client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 
 # Load enhanced risk data
 try:
@@ -41,11 +43,11 @@ Community Feedback:
 """
 
 # GPT response
-response = openai.ChatCompletion.create(
+response = client.chat.completions.create(
     model="gpt-4",
     messages=[
         {"role": "system", "content": "You are a helpful and clear risk mitigation advisor for energy projects."},
-        {"role": "user", "content": f"User asked: '{transcript}'\\n\\nContext:\\n{combined_context}"}
+        {"role": "user", "content": f"User asked: '{transcript}'\n\nContext:\n{combined_context}"}
     ]
 )
 
