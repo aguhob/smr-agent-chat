@@ -38,62 +38,9 @@ try:
     res = requests.get(airtable_url, headers=headers, params=params)
     community_records = res.json().get("records", [])
     community_feedback = "
-"  # fixed unterminated string.join([rec["fields"].get("Concern", "") for rec in community_records]) or "No recent community feedback."
+".join([rec["fields"].get("Concern", "") for rec in community_records]) or "No recent community feedback."
 except Exception as e:
     community_feedback = "Could not load community feedback."
 
 # Merge data for assistant context
 city_context = enhanced_data.get(location, [])
-community_feedback = "Recent concerns include permitting delays and water usage impacts."
-
-combined_context = f"""
-Strategic Advisory: {agent1_output}
-Risk Summary: {agent2_output}
-Mitigation Plan: {agent3_output}
-
-Local Intelligence:
-{json.dumps(city_context, indent=2)}
-
-Community Feedback:
-{community_feedback}
-"""
-
-# GPT response
-response = client.chat.completions.create(
-    model="gpt-4",
-    messages=[
-        {"role": "system", "content": "You are a helpful and clear risk mitigation advisor for energy projects."},
-        {"role": "user", "content": f"User asked: '{transcript}'\\n\\nContext:\\n{combined_context}"}
-    ]
-)
-
-reply = response.choices[0].message.content
-st.markdown(f"**AI Assistant says:** {reply}")
-
-# Optional: Play voice response with ElevenLabs
-try:
-    import base64
-    import requests
-    elevenlabs_api_key = st.secrets["ELEVENLABS_API_KEY"]
-    voice = "Rachel"  # or any available ElevenLabs voice
-    url = f"https://api.elevenlabs.io/v1/text-to-speech/{voice}"
-    headers = {
-        "xi-api-key": elevenlabs_api_key,
-        "Content-Type": "application/json"
-    }
-    data = {
-        "text": reply,
-        "voice_settings": {"stability": 0.5, "similarity_boost": 0.75}
-    }
-    response = requests.post(url, headers=headers, json=data)
-    if response.status_code == 200:
-        audio_bytes = response.content
-        st.audio(audio_bytes, format='audio/mp3')
-    else:
-        st.warning("Could not generate audio response.")
-except Exception as e:
-    st.info("Voice playback not available. Make sure ELEVENLABS_API_KEY is set in secrets.")
-
-st.markdown("---")
-st.markdown("### 📝 Want a full project report?")
-st.markdown("[Return to the PDF generator form](./Home)")
