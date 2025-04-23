@@ -54,30 +54,6 @@ response = client.chat.completions.create(
 reply = response.choices[0].message.content
 st.markdown(f"**AI Assistant says:** {reply}")
 
-# Optional: Play voice response with ElevenLabs
-try:
-    import base64
-    import requests
-    elevenlabs_api_key = st.secrets["ELEVENLABS_API_KEY"]
-    voice = "Rachel"  # or any available ElevenLabs voice
-    url = f"https://api.elevenlabs.io/v1/text-to-speech/{voice}"
-    headers = {
-        "xi-api-key": elevenlabs_api_key,
-        "Content-Type": "application/json"
-    }
-    data = {
-        "text": reply,
-        "voice_settings": {"stability": 0.5, "similarity_boost": 0.75}
-    }
-    response = requests.post(url, headers=headers, json=data)
-    if response.status_code == 200:
-        audio_bytes = response.content
-        st.audio(audio_bytes, format='audio/mp3')
-    else:
-        st.warning("Could not generate audio response.")
-except Exception as e:
-    st.info("Voice playback not available. Make sure ELEVENLABS_API_KEY is set in secrets.")
-
 st.markdown("---")
 st.markdown("### 📝 Want a full project report?")
 st.markdown("[Return to the PDF generator form](./Home)")
