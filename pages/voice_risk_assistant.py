@@ -1,59 +1,55 @@
 import streamlit as st
-from openai import OpenAI
-import json
+import speech_recognition as sr
+import pyttsx3
+from lyzr import Agent
+import openai
 
-st.set_page_config(page_title="🎙️ Voice Risk Assistant")
-st.title("🎙️ Developer Risk Voice Assistant")
-st.markdown("Speak or type your concern and get an AI-generated risk insight, enhanced with local data and community feedback.")
+# Set your OpenAI key (or use Streamlit secrets)
+openai.api_key = st.secrets["OPENAI_API_KEY"]
 
-client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
-
-# Load enhanced risk data
-try:
-    with open("enhanced_risk_data.json", "r") as f:
-        enhanced_data = json.load(f)
-except FileNotFoundError:
-    enhanced_data = {}
-
-# Placeholder agent outputs from earlier pipeline
-agent1_output = "SMRs may face local permitting resistance in flood-prone zones."
-agent2_output = "Key risks: Environmental flooding, regulatory delays."
-agent3_output = "Mitigation: Engage early with local water boards and initiate pre-permitting assessments."
-
-# Voice input disabled — fallback to text input
-transcript = st.text_input("Type your question or concern here:", "What risks should I watch for in San Antonio?")
-
-# Extract location if mentioned in voice (or ask user to specify)
-location = st.text_input("Which city or region are you referring to?", "San Antonio")
-
-# Merge data for assistant context
-city_context = enhanced_data.get(location, [])
-community_feedback = "No recent community feedback."  # Placeholder now that Airtable is removed
-
-combined_context = f"""
-Strategic Advisory: {agent1_output}
-Risk Summary: {agent2_output}
-Mitigation Plan: {agent3_output}
-
-Local Intelligence:
-{json.dumps(city_context, indent=2)}
-
-Community Feedback:
-{community_feedback}
-"""
-
-# GPT response
-response = client.chat.completions.create(
-    model="gpt-4",
-    messages=[
-        {"role": "system", "content": "You are a helpful and clear risk mitigation advisor for energy projects."},
-        {"role": "user", "content": f"User asked: '{transcript}'\\n\\nContext:\\n{combined_context}"}
-    ]
+# Init Lyzr agent (uses GPT-3.5 by default)
+agent = Agent(
+    model="gpt-3.5-turbo",
+    system="You are a kind, intelligent assistant helping with climate, community, and civic engagement."
 )
 
-reply = response.choices[0].message.content
-st.markdown(f"**AI Assistant says:** {reply}")
+# TTS setup
+tts = pyttsx3.init()
+def speak(text):
+    tts.say(text)
+    tts.runAndWait()
 
-st.markdown("---")
-st.markdown("### 📝 Want a full project report?")
-st.markdown("[Return to the PDF generator form](./Home)")
+# Speech transcription
+def transcribe():
+    r = sr.Recognizer()
+    with sr.Microphone() as source:
+        st.info("🎤 Listening... Speak now.")
+        audio = r.listen(source, phrase_time_limit=10)
+        try:
+            return r.recognize_google(audio)
+        except sr.UnknownValueError:
+            return "Sorry, I couldn't understand that."
+        except sr.RequestError as e:
+            return f"Error: {e}"
+
+# App UI
+st.title("🎙️ Voice & Text Agent (Streamlit + Lyzr)")
+
+input_mode = st.radio("Choose input mode:", ["🎤 Voice", "⌨️ Type"], horizontal=True)
+
+if input_mode == "🎤 Voice":
+    if st.button("Start Voice Agent"):
+        user_input = transcribe()
+        st.write(f"🗣️ You said: `{user_input}`")
+
+        if user_input and not user_input.startswith("Error"):
+            response = agent.run(user_input)
+            st.success(f"🤖 Agent: {response}")
+            speak(response)
+
+elif input_mode == "⌨️ Type":
+    typed_input = st.text_input("Type your question:")
+    if typed_input:
+        response = agent.run(typed_input)
+        st.success(f"🤖 Agent: {response}")
+        speak(response)
