@@ -44,4 +44,14 @@ Community Feedback:
 response = openai.ChatCompletion.create(
     model="gpt-4",
     messages=[
-        {"role": "
+        {"role": "system", "content": "You are a helpful and clear risk mitigation advisor for energy projects."},
+        {"role": "user", "content": f"User asked: '{transcript}'\\n\\nContext:\\n{combined_context}"}
+    ]
+)
+
+reply = response["choices"][0]["message"]["content"]
+st.markdown(f"**AI Assistant says:** {reply}")
+
+st.markdown("---")
+st.markdown("### 📝 Want a full project report?")
+st.markdown("[Return to the PDF generator form](./Home)")
