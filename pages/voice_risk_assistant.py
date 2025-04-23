@@ -26,21 +26,34 @@ transcript = st.text_input("Type your question or concern here:", "What risks sh
 # Extract location if mentioned in voice (or ask user to specify)
 location = st.text_input("Which city or region are you referring to?", "San Antonio")
 
-# Fetch community feedback from Airtable
-try:
-    import requests
-    airtable_api_key = st.secrets["AIRTABLE_API_KEY"]
-    base_id = st.secrets["AIRTABLE_BASE_ID"]
-    table_name = st.secrets["AIRTABLE_TABLE_NAME"]
-    airtable_url = f"https://api.airtable.com/v0/{base_id}/{table_name}"
-    headers = {"Authorization": f"Bearer {airtable_api_key}"}
-    params = {"filterByFormula": f"SEARCH(\"{location}\", {{City}})"}
-    res = requests.get(airtable_url, headers=headers, params=params)
-    community_records = res.json().get("records", [])
-    community_feedback = "
-".join([rec["fields"].get("Concern", "") for rec in community_records]) or "No recent community feedback."
-except Exception as e:
-    community_feedback = "Could not load community feedback."
-
 # Merge data for assistant context
 city_context = enhanced_data.get(location, [])
+community_feedback = "No recent community feedback."  # Placeholder now that Airtable is removed
+
+combined_context = f"""
+Strategic Advisory: {agent1_output}
+Risk Summary: {agent2_output}
+Mitigation Plan: {agent3_output}
+
+Local Intelligence:
+{json.dumps(city_context, indent=2)}
+
+Community Feedback:
+{community_feedback}
+"""
+
+# GPT response
+response = client.chat.completions.create(
+    model="gpt-4",
+    messages=[
+        {"role": "system", "content": "You are a helpful and clear risk mitigation advisor for energy projects."},
+        {"role": "user", "content": f"User asked: '{transcript}'\\n\\nContext:\\n{combined_context}"}
+    ]
+)
+
+reply = response.choices[0].message.content
+st.markdown(f"**AI Assistant says:** {reply}")
+
+st.markdown("---")
+st.markdown("### 📝 Want a full project report?")
+st.markdown("[Return to the PDF generator form](./Home)")
