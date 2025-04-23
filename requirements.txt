@@ -6,5 +6,5 @@ requests
 //streamlit_webrtc
 lyzr
 speechrecognition
-pyttsx3; sys_platform != 'linux'  # only install locally
+//pyttsx3; sys_platform != 'linux'  # only install locally
 pyaudio
