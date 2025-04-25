@@ -1,26 +1,4 @@
-//streamlit
-//openai
-//fpdf
-//requests
-//streamlit-audiorecorder
-//streamlit_webrtc
-//lyzr
-//speechrecognition
-//pyttsx3; sys_platform != 'linux'  # only install locally
-//pyaudio
-
-
-# Core app framework
-streamlit>=1.32
-
-# AI agent logic
-lyzr>=0.1.0
+streamlit
 openai
-
-# Voice input/output (for local use)
-speechrecognition
-pyttsx3
-pyaudio
-
-# Optional: prevent install on cloud if deploying
-# pyttsx3; sys_platform != 'linux'  # optional conditional
+fpdf
+requests
